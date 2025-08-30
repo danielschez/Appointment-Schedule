@@ -15,12 +15,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xmkq4to0l8jmmxo=kc)es6qsvxg1dn0=yak5w9$dd_0s+zlvk^'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'RENDER' not in os.environ
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'appointment-schedule-ibf8.onrender.com']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 render_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_hostname and render_hostname not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_hostname)
@@ -29,9 +29,7 @@ if render_hostname and render_hostname not in ALLOWED_HOSTS:
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if origin]
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'rest_framework',
     'appointment',
@@ -43,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',  # Asegúrate de que esté incluido
 ]
 
 MIDDLEWARE = [
@@ -59,7 +57,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'barber.urls'
-
 
 TEMPLATES = [
     {
@@ -90,7 +87,6 @@ SERVER_EMAIL = config('EMAIL_HOST_USER')
 
 # Configuración adicional para Gmail
 EMAIL_TIMEOUT = 60  # Timeout en segundos
-
 
 # Configuración de logging
 LOGGING = {
@@ -123,10 +119,7 @@ LOGGING = {
 
 WSGI_APPLICATION = 'barber.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
@@ -134,10 +127,7 @@ DATABASES = {
     )
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -153,30 +143,40 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'es-mx'
-
 TIME_ZONE = 'America/Mexico_City'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files (CSS, JavaScript, Images) - CONFIGURACIÓN CORREGIDA
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configuración de WhiteNoise para archivos estáticos
 if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Usar la nueva configuración de Django 4.2+
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    
+    # Configuración adicional de WhiteNoise
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_AUTOREFRESH = True
+
+# Directorios adicionales para archivos estáticos
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+] if os.path.exists(os.path.join(BASE_DIR, 'static')) else []
+
+# Configuración de archivos de medios (si los usas)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
