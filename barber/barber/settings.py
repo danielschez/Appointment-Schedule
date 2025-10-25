@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from decouple import config
 import dj_database_url
 from dotenv import load_dotenv
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',  # Asegúrate de que esté incluido
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
@@ -81,9 +81,10 @@ EMAIL_PORT = config('EMAIL_PORT', cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-EMAIL_USE_SSL = False  # No uses SSL con TLS
 DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
 SERVER_EMAIL = config('EMAIL_HOST_USER')
+ADMIN_EMAIL = config('ADMIN_EMAIL', default=config('EMAIL_HOST_USER'))
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 
 # Configuración adicional para Gmail
 EMAIL_TIMEOUT = 60  # Timeout en segundos
@@ -120,12 +121,22 @@ LOGGING = {
 WSGI_APPLICATION = 'barber.wsgi.application'
 
 # Database
-DATABASES = {
+'''DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
         conn_max_age=600,
     )
+}'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

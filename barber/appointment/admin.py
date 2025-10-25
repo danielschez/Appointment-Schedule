@@ -1,7 +1,10 @@
 import openpyxl
 from django.http import HttpResponse
 from django.contrib import admin
-from .models import Schedule, Weekday, Workinghours, Service
+from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from .models import Schedule, Weekday, Workinghours, Service, PromoCode
 
 def exportar_excel(modeladmin, request, queryset):
     wb = openpyxl.Workbook()
@@ -48,9 +51,26 @@ class WorkingHoursAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'duration', 'price')
+    list_display = ('name', 'duration', 'price', 'image_preview', 'edit_link')
     search_fields = ('name',)
     ordering = ('name',)
 
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="60" height="40" style="object-fit:cover;" />', obj.image.url)
+        return '—'
+    image_preview.short_description = 'Imagen'
+
+    def edit_link(self, obj):
+        url = reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[obj.id])
+        return format_html('<a href="{}">Editar</a>', url)
+    edit_link.short_description = 'Editar'
+
+@admin.register(PromoCode)
+class PromoCode(admin.ModelAdmin):
+    list_display = ('code', 'discount_percentage', 'valid_from', 'valid_to', 'active')
+    search_fields = ('code',)
+    list_filter = ('active', 'valid_from', 'valid_to')
+    ordering = ('-valid_from',)
 
 

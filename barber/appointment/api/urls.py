@@ -1,10 +1,13 @@
-from rest_framework.routers import DefaultRouter
-from .views import ScheduleViewSet, ServiceViewSet, WorkinghoursViewSet, WeekdayViewSet
+from rest_framework import routers
+from django.urls import path, include
+from .views import ScheduleViewSet, ServiceViewSet, WeekdayViewSet, WorkinghoursViewSet
 
-router = DefaultRouter()
+router = routers.DefaultRouter()
 router.register(r'schedule', ScheduleViewSet)
 router.register(r'service', ServiceViewSet)
-router.register(r'workinghours', WorkinghoursViewSet)
 router.register(r'weekday', WeekdayViewSet)
+router.register(r'workinghours', WorkinghoursViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),
+]

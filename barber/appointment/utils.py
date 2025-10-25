@@ -1,57 +1,101 @@
 # appointment/utils.py
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.conf import settings
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('appointment.utils')
 
 def enviar_email_confirmacion(cita):
     """
-    Envía email de confirmación de cita
+    Envía un email de confirmación al cliente cuando se crea una cita
     """
     try:
+        logger.info(f'🔄 Intentando enviar email a {cita.email}')
+        
+        # Obtener información del servicio
+        servicio = cita.service
+        
+        # Contexto para el template del email
+        context = {
+            'nombre': cita.name,
+            'servicio': servicio.name,
+            'fecha': cita.date.strftime('%d/%m/%Y'),
+            'hora': cita.time.strftime('%H:%M'),
+            'duracion': str(servicio.duration),
+            'precio': servicio.price,
+            'descripcion': cita.description or '',
+        }
+        
+        logger.info(f'📧 Renderizando template con contexto: {context}')
+        
         # Renderizar el template HTML
-        html_content = render_to_string('emails/confirmacion_cita.html', {
-            'cita': cita
-        })
+        html_message = render_to_string('emails/confirmacion_cita.html', context)
+        plain_message = strip_tags(html_message)
         
-        # Crear contenido de texto plano como fallback
-        text_content = f"""
-        ¡Cita Confirmada!
-        
-        Estimado/a {cita.name},
-        
-        Su cita ha sido confirmada:
-        - Servicio: {cita.service.name}
-        - Fecha: {cita.date.strftime('%d/%m/%Y')}
-        - Hora: {cita.time.strftime('%H:%M')}
-        
-        Por favor llegue 10 minutos antes.
-        ¡Nos vemos pronto en la silla!
-        
-        ---
-        Walld's Barber
-        Este es un email automático, por favor no responder.
-        """
-        
-        # Crear el email con EmailMultiAlternatives
+        # Crear email con contenido HTML
         email = EmailMultiAlternatives(
-            subject=f'Confirmación de Cita - {cita.service.name}',
-            body=text_content,
-            from_email=f"Walld's Barber <{settings.EMAIL_HOST_USER}>",
-            to=[cita.email],
+            subject=f'Confirmación de cita - {servicio.name}',
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[cita.email]
         )
+        email.attach_alternative(html_message, "text/html")
         
-        # Adjuntar contenido HTML
-        email.attach_alternative(html_content, "text/html")
+        logger.info(f'📤 Enviando email desde {settings.DEFAULT_FROM_EMAIL} a {cita.email}')
+        email.send(fail_silently=False)
         
-        # Enviar el email
-        email.send()
-        
-        logger.info(f'Email de confirmación enviado a {cita.email} para cita ID: {cita.id}')
+        logger.info(f'✅ Email enviado exitosamente a {cita.email}')
         return True
         
     except Exception as e:
-        logger.error(f'Error enviando email de confirmación: {str(e)}')
+        logger.error(f'❌ Error al enviar email a {cita.email}: {str(e)}')
+        import traceback
+        logger.error(traceback.format_exc())
+        return False
+
+
+def enviar_email_notificacion_admin(cita):
+    """
+    Envía un email de notificación al administrador cuando se crea una cita
+    """
+    try:
+        servicio = cita.service
+        admin_email = settings.ADMIN_EMAIL
+        
+        logger.info(f'🔄 Intentando enviar notificación al admin: {admin_email}')
+        
+        context = {
+            'nombre': cita.name,
+            'email': cita.email,
+            'telefono': cita.phone,
+            'servicio': servicio.name,
+            'fecha': cita.date.strftime('%d/%m/%Y'),
+            'hora': cita.time.strftime('%H:%M'),
+            'precio': servicio.price,
+            'descripcion': cita.description or '',
+        }
+        
+        html_message = render_to_string('emails/notificacion_admin.html', context)
+        plain_message = strip_tags(html_message)
+        
+        email = EmailMultiAlternatives(
+            subject=f'Nueva cita agendada - {servicio.name}',
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[admin_email]
+        )
+        email.attach_alternative(html_message, "text/html")
+        
+        logger.info(f'📤 Enviando notificación desde {settings.DEFAULT_FROM_EMAIL} a {admin_email}')
+        email.send(fail_silently=False)
+        
+        logger.info(f'✅ Notificación enviada al administrador')
+        return True
+        
+    except Exception as e:
+        logger.error(f'❌ Error al enviar notificación al admin: {str(e)}')
+        import traceback
+        logger.error(traceback.format_exc())
         return False
