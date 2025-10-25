@@ -430,6 +430,7 @@ button:active {
 .campo textarea {
   resize: vertical;
   font-family: inherit;
+  color: #333;
 }
 
 .botones-formulario {

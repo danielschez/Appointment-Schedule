@@ -486,7 +486,7 @@ const Calendario = () => {
                   
                   return (
                     <div key={cita.id} className="cita-existente">
-                      {inicio} - {fin} | {servicioInfo?.name || 'Servicio'} | {cita.name}
+                      {inicio} - {fin} | {servicioInfo?.name || 'Servicio'}
                     </div>
                   );
                 })}
@@ -591,6 +591,61 @@ const Calendario = () => {
                   title="Debe ser un número válido"
                 />
               </div>
+
+              <div className="mb-6">
+                <p className="text-gray-700 font-medium mb-2">
+                  ¿Tienes un código promocional de descuento?
+                </p>
+
+                <div className="flex items-center gap-4 mb-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="tieneCodigo"
+                      value="si"
+                      checked={formularioData.tieneCodigo === 'si'}
+                      onChange={manejarCambioFormulario}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-gray-700">Sí</span>
+                  </label>
+
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="tieneCodigo"
+                      value="no"
+                      checked={formularioData.tieneCodigo === 'no'}
+                      onChange={manejarCambioFormulario}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-gray-700">No</span>
+                  </label>
+                </div>
+
+                {formularioData.tieneCodigo === 'si' && (
+                  <div className="animate-fadeIn">
+                    <label
+                      htmlFor="promoCode"
+                      className="block text-gray-700 font-medium mb-2"
+                    >
+                      Ingresa tu código promocional
+                    </label>
+                    <input
+                      type="text"
+                      id="promoCode"
+                      name="promoCode"
+                      value={formularioData.promoCode}
+                      onChange={manejarCambioFormulario}
+                      placeholder="Ej: DESCUENTO10"
+                      pattern="^[A-Za-z0-9]{4,10}$"
+                      title="El código debe tener entre 4 y 10 caracteres alfanuméricos"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                    />
+                  </div>
+                )}
+              </div>
+
 
               <div className="campo">
                 <label htmlFor="description">Descripción (opcional)</label>
