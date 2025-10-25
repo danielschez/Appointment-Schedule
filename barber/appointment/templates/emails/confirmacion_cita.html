@@ -1,0 +1,25 @@
+<!-- appointment/templates/emails/confirmacion_cita.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #4CAF50;">✓ Cita Confirmada</h1>
+        <p>Hola <strong>{{ nombre }}</strong>,</p>
+        <p>Tu cita ha sido agendada exitosamente:</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50;">
+            <p><strong>Servicio:</strong> {{ servicio }}</p>
+            <p><strong>Fecha:</strong> {{ fecha }}</p>
+            <p><strong>Hora:</strong> {{ hora }}</p>
+            <p><strong>Duración:</strong> {{ duracion }}</p>
+            <p><strong>Precio:</strong> ${{ precio }}</p>
+            {% if descripcion %}
+            <p><strong>Notas:</strong> {{ descripcion }}</p>
+            {% endif %}
+        </div>
+        <p>¡Nos vemos pronto!</p>
+    </div>
+</body>
+</html>
