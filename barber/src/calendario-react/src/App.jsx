@@ -1,13 +1,19 @@
-// src/calendario-react/src/App.jsx
-import React from 'react';
-import Calendario from './components/Calendario';
+/* src/App.jsx */
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+import Home from "./pages/Home";
+import Calendario from "./pages/Calendario";
 
 function App() {
   return (
-    <div>
-      <h1>Reserva tu cita</h1>
-      <Calendario />
-    </div>
+    <HelmetProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/calendario" element={<Calendario />} />
+        </Routes>
+      </Router>
+    </HelmetProvider>
   );
 }
 
