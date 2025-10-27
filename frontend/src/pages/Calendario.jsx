@@ -92,36 +92,20 @@ const Calendario = () => {
       setError(null);
       
       try {
-        const apiUrl = API_BASE || 'http://localhost:8000/api';
+        // Usar directamente la variable de entorno
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
         
-        const urlsToTest = [
-          `${apiUrl}/service/`,
-          `${apiUrl}/service`,
-          `${apiUrl.replace('/api', '')}/api/service/`,
-        ];
+        console.log('🔗 Conectando a API:', apiUrl);
         
-        let workingUrl = null;
-        
-        for (const url of urlsToTest) {
-          try {
-            const testResponse = await axios.get(url);
-            workingUrl = url.replace('/service/', '').replace('/service', '');
-            break;
-          } catch (testError) {
-            continue;
-          }
-        }
-        
-        if (!workingUrl) {
-          throw new Error('No se encontró ninguna URL de API válida');
-        }
-        
+        // Hacer todas las peticiones en paralelo
         const [srv, wd, wh, schedule] = await Promise.all([
-          axios.get(`${workingUrl}/service/`),
-          axios.get(`${workingUrl}/weekday/`),
-          axios.get(`${workingUrl}/workinghours/`),
-          axios.get(`${workingUrl}/schedule/`)
+          axios.get(`${apiUrl}/service/`),
+          axios.get(`${apiUrl}/weekday/`),
+          axios.get(`${apiUrl}/workinghours/`),
+          axios.get(`${apiUrl}/schedule/`)
         ]);
+        
+        console.log('✅ Datos cargados exitosamente');
         
         setServicios(Array.isArray(srv.data) ? srv.data : []);
         setWeekdays(Array.isArray(wd.data) ? wd.data : []);
@@ -129,7 +113,7 @@ const Calendario = () => {
         setCitas(Array.isArray(schedule.data) ? schedule.data : []);
         
       } catch (err) {
-        console.error('Error al cargar datos:', err);
+        console.error('❌ Error al cargar datos:', err);
         setError(`Error al cargar los datos: ${err.message}`);
         setServicios([]);
         setWeekdays([]);
@@ -141,7 +125,7 @@ const Calendario = () => {
     };
     
     fetchAll();
-  }, [API_BASE]);
+  }, []);
 
   const dias = obtenerDiasDelMes(añoActual, mesActual);
 
@@ -233,7 +217,7 @@ const Calendario = () => {
         citaData.promo_code_text = promoCode.trim();
       }
 
-      const apiUrl = API_BASE || 'http://localhost:8000/api';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
       const response = await axios.post(`${apiUrl}/schedule/`, citaData);
 
       console.log('✅ Cita creada:', response.data);
@@ -651,7 +635,7 @@ const Calendario = () => {
                       placeholder="Ej: DESCUENTO10"
                       pattern="^[A-Za-z0-9]{4,15}$"
                       title="El código debe tener entre 4 y 10 caracteres alfanuméricos"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-black"
                     />
                   </div>
                 )}
