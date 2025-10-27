@@ -194,6 +194,7 @@ const Calendario = () => {
     });
   };
 
+  // En tu componente Calendario.jsx
   const enviarCita = async (e) => {
     e.preventDefault();
 
@@ -216,7 +217,7 @@ const Calendario = () => {
     setEnviandoCita(true);
 
     try {
-      const { company, description, ...rest } = formularioData;
+      const { company, description, tieneCodigo, promoCode, ...rest } = formularioData;
 
       const citaData = {
         ...rest,
@@ -227,6 +228,11 @@ const Calendario = () => {
         captchaToken
       };
 
+      // Agregar código promocional solo si se seleccionó "Sí" y hay un código
+      if (tieneCodigo === 'si' && promoCode && promoCode.trim()) {
+        citaData.promo_code_text = promoCode.trim();
+      }
+
       const apiUrl = API_BASE || 'http://localhost:8000/api';
       const response = await axios.post(`${apiUrl}/schedule/`, citaData);
 
@@ -234,13 +240,18 @@ const Calendario = () => {
       cerrarFormulario();
       alert('¡Cita agendada exitosamente!');
       
-      // Limpiar y volver a servicios
       sessionStorage.removeItem('servicioSeleccionado');
       navigate('/#servicios');
 
     } catch (error) {
       console.error('❌ Error al agendar cita:', error);
-      alert('Error al agendar la cita. Por favor intente nuevamente.');
+      
+      // Mostrar mensaje específico si el error es del código promocional
+      if (error.response?.data?.promo_code) {
+        alert(`Error: ${error.response.data.promo_code[0]}`);
+      } else {
+        alert('Error al agendar la cita. Por favor intente nuevamente.');
+      }
     } finally {
       setEnviandoCita(false);
     }
@@ -638,7 +649,7 @@ const Calendario = () => {
                       value={formularioData.promoCode}
                       onChange={manejarCambioFormulario}
                       placeholder="Ej: DESCUENTO10"
-                      pattern="^[A-Za-z0-9]{4,10}$"
+                      pattern="^[A-Za-z0-9]{4,15}$"
                       title="El código debe tener entre 4 y 10 caracteres alfanuméricos"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                     />

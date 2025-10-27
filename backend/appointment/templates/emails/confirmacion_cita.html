@@ -1,0 +1,58 @@
+<!-- appointment/templates/emails/confirmacion_cita.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #4CAF50;">✓ Cita Confirmada</h1>
+        <p>Hola <strong>{{ nombre }}</strong>,</p>
+        <p>Tu cita ha sido agendada exitosamente:</p>
+        
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
+            <p><strong>Servicio:</strong> {{ servicio }}</p>
+            <p><strong>Fecha:</strong> {{ fecha }}</p>
+            <p><strong>Hora:</strong> {{ hora }}</p>
+            <p><strong>Duración:</strong> {{ duracion }}</p>
+            {% if descripcion %}
+            <p><strong>Notas:</strong> {{ descripcion }}</p>
+            {% endif %}
+        </div>
+
+        <div style="background-color: #e8f5e9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #2e7d32;">💰 Información de Pago</h3>
+            
+            {% if tiene_descuento %}
+                <p style="text-decoration: line-through; color: #666;">
+                    Precio original: ${{ precio_original }}
+                </p>
+                <p style="color: #4CAF50; font-weight: bold; font-size: 1.1em;">
+                    🎉 Descuento aplicado ({{ descuento_porcentaje }}%): -${{ descuento_monto }}
+                </p>
+                <p style="color: #2e7d32; font-weight: bold; font-size: 1.2em;">
+                    <strong>Precio final: ${{ precio_final }}</strong>
+                </p>
+                <p style="background-color: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    ✓ Código promocional aplicado: <strong>{{ codigo_promocional }}</strong>
+                </p>
+                <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                    ¡Ahorraste ${{ descuento_monto }}!
+                </p>
+            {% else %}
+                <p style="font-size: 1.2em; font-weight: bold;">
+                    <strong>Precio: ${{ precio_final }}</strong>
+                </p>
+            {% endif %}
+        </div>
+
+        <p><strong>Importante:</strong></p>
+        <ul>
+            <li>Por favor llega 5 minutos antes de tu cita</li>
+            <li>Si necesitas cancelar o reprogramar, contáctanos con anticipación</li>
+        </ul>
+        
+        <p>¡Nos vemos pronto!</p>
+    </div>
+</body>
+</html>

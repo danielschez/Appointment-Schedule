@@ -67,10 +67,10 @@ class ServiceAdmin(admin.ModelAdmin):
     edit_link.short_description = 'Editar'
 
 @admin.register(PromoCode)
-class PromoCode(admin.ModelAdmin):
-    list_display = ('code', 'discount_percentage', 'valid_from', 'valid_to', 'active')
-    search_fields = ('code',)
-    list_filter = ('active', 'valid_from', 'valid_to')
-    ordering = ('-valid_from',)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ['code', 'discount_percentage', 'valid_from', 'valid_to', 'active', 'current_uses']
+    list_filter = ['active', 'valid_from', 'valid_to']
+    search_fields = ['code']
+    ordering = ['-valid_to']
 
 
