@@ -354,6 +354,29 @@ const Calendario = () => {
     });
 
     const horariosUnicos = [...new Set(todosLosHorarios)];
+    
+    // Si la fecha seleccionada es hoy, filtrar horas pasadas
+    const esHoy = fechaSeleccionada.toDateString() === hoy.toDateString();
+      if (esHoy) {
+        // Obtener hora actual en México (UTC-6)
+        const ahoraLocal = new Date();
+        const offsetMexico = -6 * 60; // UTC-6 en minutos
+        const offsetActual = ahoraLocal.getTimezoneOffset();
+        const diferencia = offsetActual - offsetMexico;
+        const ahoraMexico = new Date(ahoraLocal.getTime() + diferencia * 60000);
+        
+        const horaActualMinutos = ahoraMexico.getHours() * 60 + ahoraMexico.getMinutes();
+        
+        // Filtrar solo horarios donde la hora de inicio + duración sea después de la hora actual
+        return horariosUnicos
+          .filter(hora => {
+            const horaInicioMinutos = timeStringToMinutes(hora);
+            // La cita debe iniciar al menos ahora o después
+            return horaInicioMinutos >= horaActualMinutos;
+          })
+          .sort();
+      }
+    
     return horariosUnicos.sort();
   };
 
