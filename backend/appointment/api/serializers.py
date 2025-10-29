@@ -15,9 +15,16 @@ class ScheduleSerializer(serializers.ModelSerializer):
         source='promo_code_input'
     )
     
+    # Definir explícitamente los campos encriptados
+    name = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=15)
+    
     class Meta:
         model = Schedule
-        fields = '__all__'
+        fields = ['id', 'date', 'time', 'name', 'email', 'phone', 
+                  'description', 'promo_code_allowed', 'service', 
+                  'promo_code', 'promo_code_text']
         extra_kwargs = {
             'promo_code': {'read_only': True}
         }
@@ -68,7 +75,22 @@ class ScheduleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         logger.info(f'[CREATE] Creando nueva cita para {validated_data.get("name")}')
         
-        cita = Schedule.objects.create(**validated_data)
+        # Extraer los datos
+        name = validated_data.pop('name')
+        email = validated_data.pop('email')
+        phone = validated_data.pop('phone')
+        
+        # Crear el objeto
+        cita = Schedule(**validated_data)
+        
+        # Asignar los campos encriptados
+        cita.name = name
+        cita.email = email
+        cita.phone = phone
+        
+        # Guardar
+        cita.save()
+        
         logger.info(f'[OK] Cita {cita.id} creada exitosamente')
         
         if cita.promo_code:
@@ -99,6 +121,14 @@ class ScheduleSerializer(serializers.ModelSerializer):
             logger.error(traceback.format_exc())
         
         return cita
+    
+    def to_representation(self, instance):
+        """
+        Convierte la instancia a diccionario para la respuesta
+        Los properties se encargan de desencriptar automáticamente
+        """
+        ret = super().to_representation(instance)
+        return ret
 
 
 class ServiceSerializer(serializers.ModelSerializer):

@@ -1,6 +1,8 @@
 # barber/appointment/models.py
+import hashlib
 from django.db import models
 from django.utils import timezone
+from .encryption import encryptor
 
 class Service(models.Model):
     name = models.CharField(max_length=100)
@@ -16,6 +18,7 @@ class Service(models.Model):
         verbose_name = "Service"
         verbose_name_plural = "Servicios"
         ordering = ['name']
+
 
 class PromoCode(models.Model):
     code = models.CharField(max_length=20, unique=True)
@@ -43,24 +46,67 @@ class PromoCode(models.Model):
         verbose_name_plural = "Códigos promocionales"
         ordering = ['-valid_to']
 
+
 class Schedule(models.Model):
     date = models.DateField()
     time = models.TimeField()
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=15)
+
+    # Campos encriptados
+    _name = models.TextField(db_column='name', null=True, blank=True)
+    _email = models.TextField(db_column='email', null=True, blank=True)
+    _phone = models.TextField(db_column='phone', null=True, blank=True)
+
+    # Campos hash para búsqueda
+    name_hash = models.CharField(max_length=64, editable=False, db_index=True, blank=True, null=True)
+    email_hash = models.CharField(max_length=64, editable=False, db_index=True, blank=True, null=True)
+
     description = models.TextField()
     promo_code_allowed = models.BooleanField(default=False)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='schedules')
-    promo_code = models.ForeignKey(PromoCode, null=True, blank=True, on_delete=models.SET_NULL)
+    service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name='schedules')
+    promo_code = models.ForeignKey('PromoCode', null=True, blank=True, on_delete=models.SET_NULL)
+
+    @staticmethod
+    def hash_value(value):
+        """Crea un hash SHA256 hexadecimal (en minúsculas)."""
+        if not value:
+            return ''
+        return hashlib.sha256(value.strip().lower().encode()).hexdigest()
+
+    # --- properties existentes ---
+    @property
+    def name(self):
+        return encryptor.decrypt(self._name) if self._name else ''
+    
+    @name.setter
+    def name(self, value):
+        self._name = encryptor.encrypt(value) if value else ''
+        self.name_hash = self.hash_value(value)
+
+    @property
+    def email(self):
+        return encryptor.decrypt(self._email) if self._email else ''
+    
+    @email.setter
+    def email(self, value):
+        self._email = encryptor.encrypt(value) if value else ''
+        self.email_hash = self.hash_value(value)
+
+    @property
+    def phone(self):
+        return encryptor.decrypt(self._phone) if self._phone else ''
+    
+    @phone.setter
+    def phone(self, value):
+        self._phone = encryptor.encrypt(value) if value else ''
 
     def __str__(self):
-        return f"Appointment on {self.date} at {self.time}"
+        return f"Cita {self.date} {self.time} - {self.name}"
 
     class Meta:
         verbose_name = "Schedule"
         verbose_name_plural = "Citas"
         ordering = ['-date', '-time']
+
 
 class Weekday(models.Model):
     day = models.CharField(max_length=10)
@@ -74,6 +120,7 @@ class Weekday(models.Model):
         verbose_name_plural = "Dias de la semana"
         ordering = ['id']
 
+
 class Workinghours(models.Model):
     day = models.ForeignKey(Weekday, on_delete=models.CASCADE)
     start_time = models.TimeField()
@@ -86,5 +133,3 @@ class Workinghours(models.Model):
         verbose_name = "Working Hour"
         verbose_name_plural = "Horas de trabajo"
         ordering = ['day__id', 'start_time']
-
-
