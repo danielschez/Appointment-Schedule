@@ -333,8 +333,19 @@ const Calendario = () => {
     return horariosDisponibles;
   };
 
+  const getHoraActualMexico = () => {
+    // Crear fecha en zona horaria de México (America/Mexico_City)
+    const ahoraMexico = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Mexico_City'
+    });
+    
+    const fechaMexico = new Date(ahoraMexico);
+    return fechaMexico.getHours() * 60 + fechaMexico.getMinutes();
+  };
+
   const horasDisponibles = () => {
     if (!fechaSeleccionada || !servicioSeleccionado) return [];
+    
     const diaSemana = fechaSeleccionada.getDay();
     const dayMapping = {
       0: 7, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6
@@ -355,27 +366,36 @@ const Calendario = () => {
 
     const horariosUnicos = [...new Set(todosLosHorarios)];
     
-    // Si la fecha seleccionada es hoy, filtrar horas pasadas
-    const esHoy = fechaSeleccionada.toDateString() === hoy.toDateString();
-      if (esHoy) {
-        // Obtener hora actual en México (UTC-6)
-        const ahoraLocal = new Date();
-        const offsetMexico = -6 * 60; // UTC-6 en minutos
-        const offsetActual = ahoraLocal.getTimezoneOffset();
-        const diferencia = offsetActual - offsetMexico;
-        const ahoraMexico = new Date(ahoraLocal.getTime() + diferencia * 60000);
-        
-        const horaActualMinutos = ahoraMexico.getHours() * 60 + ahoraMexico.getMinutes();
-        
-        // Filtrar solo horarios donde la hora de inicio + duración sea después de la hora actual
-        return horariosUnicos
-          .filter(hora => {
-            const horaInicioMinutos = timeStringToMinutes(hora);
-            // La cita debe iniciar al menos ahora o después
-            return horaInicioMinutos >= horaActualMinutos;
-          })
-          .sort();
-      }
+    // Verificar si la fecha seleccionada es hoy
+    const hoyMexico = new Date().toLocaleString('en-US', {
+      timeZone: 'America/Mexico_City'
+    });
+    const fechaHoyMexico = new Date(hoyMexico);
+    fechaHoyMexico.setHours(0, 0, 0, 0);
+    
+    const fechaSeleccionadaSinHora = new Date(fechaSeleccionada);
+    fechaSeleccionadaSinHora.setHours(0, 0, 0, 0);
+    
+    const esHoy = fechaSeleccionadaSinHora.getTime() === fechaHoyMexico.getTime();
+    
+    if (esHoy) {
+      // Obtener la hora actual en minutos (México)
+      const horaActualMinutos = getHoraActualMexico();
+      
+      console.log('🕐 Hora actual en México:', minutesToTimeString(horaActualMinutos));
+      
+      // Filtrar horarios: la cita debe terminar DESPUÉS de la hora actual
+      return horariosUnicos
+        .filter(hora => {
+          const horaInicioMinutos = timeStringToMinutes(hora);
+          const horaFinMinutos = horaInicioMinutos + duracionMinutos;
+          
+          // La cita completa (inicio + duración) debe terminar después de ahora
+          // O al menos el inicio debe ser mayor o igual a la hora actual
+          return horaInicioMinutos >= horaActualMinutos;
+        })
+        .sort();
+    }
     
     return horariosUnicos.sort();
   };
