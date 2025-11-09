@@ -1,5 +1,5 @@
 # appointment/utils.py
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
@@ -129,4 +129,36 @@ def enviar_email_notificacion_admin(cita):
         logger.error(f'[ERROR] Error al enviar notificacion al admin: {str(e)}')
         import traceback
         logger.error(traceback.format_exc())
+        return False
+    
+
+
+def enviar_email_cancelacion(cita):
+    """
+    Envía un correo electrónico al cliente notificando la cancelación de su cita
+    """
+    try:
+        contexto = {
+            'nombre': cita.name,
+            'servicio': cita.service.name,
+            'fecha': cita.date.strftime('%d/%m/%Y'),
+            'hora': cita.time.strftime('%H:%M'),
+        }
+        
+        mensaje_html = render_to_string('emails/cancelacion_cita.html', contexto)
+        
+        send_mail(
+            subject='❌ Cita Cancelada - ' + cita.service.name,
+            message='',  # Mensaje en texto plano (vacío si solo usas HTML)
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[cita.email],
+            html_message=mensaje_html,
+            fail_silently=False,
+        )
+        
+        logger.info(f'Email de cancelación enviado exitosamente a {cita.email}')
+        return True
+        
+    except Exception as e:
+        logger.error(f'Error al enviar email de cancelación: {str(e)}')
         return False
