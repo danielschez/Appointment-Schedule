@@ -23,14 +23,8 @@ const About = () => {
     }
   ];
 
-  const nextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
-  };
-
+  const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
+  const prevImage = () => setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
   const goToImage = (index) => {
     setCurrentImage(index);
     setIsAutoPlaying(false);
@@ -38,7 +32,7 @@ const About = () => {
 
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
+
     const interval = setInterval(() => {
       nextImage();
     }, 4000);
@@ -50,39 +44,20 @@ const About = () => {
     <section id="nosotros" className="py-32 bg-gradient-to-b from-[#0f0f0f] via-[#222222] to-[#0f0f0f] relative">
       <div className="max-w-6xl mx-auto px-8">
         <div className="grid md:grid-cols-2 gap-16 items-center">
+          {/* Texto */}
           <div className="space-y-8">
             <div className="w-20 h-[3px] bg-[#e8c547]"></div>
             <h2 className="text-6xl font-black leading-none tracking-tighter">
-              TRADICIÓN<br />ENCUENTRA<br /><span className="text-[#e8c547]">ESTILO</span>
+              <span className="text-[#e8c547]">MÁS QUE UN CORTE, UNA EXPERIENCIA DE ESTILO</span>
             </h2>
             <p className="text-gray-300 text-lg leading-relaxed">
-              En <strong className="text-[#e8c547] font-black">WALLD'S BARBER</strong>, creemos en el arte de la barbería tradicional. Nuestros maestros barberos combinan décadas de experiencia con técnicas de vanguardia.
+              En nuestra barbería, no solo te ofrecemos cortes de cabello impecables, sino una experiencia de cuidado personal incomparable. Nuestros expertos barberos están dedicados a resaltar tu estilo único y realzar tu confianza. Ven y relájate en un ambiente moderno y acogedor, donde la atención al detalle es nuestra prioridad. Desde cortes clásicos hasta tendencias de vanguardia, estamos aquí para asegurarnos de que salgas luciendo y sintiéndote increíble. ¡Descubre la diferencia en <strong className="text-[#e8c547] font-black">WALLD'S BARBER</strong>!
             </p>
-            <p className="text-gray-400 leading-relaxed">
-              Desde 2010, hemos sido el destino para quienes exigen excelencia en cuidado personal. Cada corte, cada afeitado, cada detalle importa.
-            </p>
-            <div className="flex gap-12 pt-8">
-              <div>
-                <div className="text-5xl font-black text-[#e8c547] mb-2">15+</div>
-                <div className="text-gray-400 text-sm uppercase tracking-widest">Años</div>
-              </div>
-              <div>
-                <div className="text-5xl font-black text-[#e8c547] mb-2">10K+</div>
-                <div className="text-gray-400 text-sm uppercase tracking-widest">Clientes</div>
-              </div>
-              <div>
-                <div className="text-5xl font-black text-[#e8c547] mb-2">5</div>
-                <div className="text-gray-400 text-sm uppercase tracking-widest">Barberos</div>
-              </div>
-            </div>
           </div>
-          
+
           {/* Carousel */}
           <div className="relative group">
-            {/* Glow effect */}
             <div className="absolute -inset-4 bg-[#e8c547]/10 blur-3xl group-hover:bg-[#e8c547]/20 transition-all duration-700"></div>
-            
-            {/* Main image container */}
             <div className="relative overflow-hidden shadow-2xl border-4 border-[#e8c547]/20">
               <div 
                 className="flex transition-transform duration-700 ease-in-out"
@@ -99,34 +74,21 @@ const About = () => {
                 ))}
               </div>
 
-              {/* Navigation buttons */}
+              {/* Controles */}
               <button
-                onClick={() => {
-                  prevImage();
-                  setIsAutoPlaying(false);
-                }}
+                onClick={() => { prevImage(); setIsAutoPlaying(false); }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#e8c547] text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100"
-                aria-label="Previous image"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
-
               <button
-                onClick={() => {
-                  nextImage();
-                  setIsAutoPlaying(false);
-                }}
+                onClick={() => { nextImage(); setIsAutoPlaying(false); }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#e8c547] text-white p-3 rounded-full backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100"
-                aria-label="Next image"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </button>
 
-              {/* Dots indicator */}
+              {/* Indicadores */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
                 {images.map((_, index) => (
                   <button
@@ -137,16 +99,55 @@ const About = () => {
                         ? "w-10 h-3 bg-[#e8c547]"
                         : "w-3 h-3 bg-white/50 hover:bg-white/80"
                     }`}
-                    aria-label={`Go to image ${index + 1}`}
                   />
                 ))}
               </div>
 
-              {/* Image counter */}
+              {/* Contador */}
               <div className="absolute top-6 right-6 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm font-bold">
                 {currentImage + 1} / {images.length}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 📍 Mapa */}
+        <div className="mt-24 text-center">
+          <h3 className="text-3xl font-bold text-[#e8c547] mb-6">Encuéntranos aquí</h3>
+          
+          <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-2xl border border-[#e8c547]/30">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3732.616005022502!2d-100.3249378!3d20.5921483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d34315806ac4a7%3A0xb553b50261d3993d!2sBarberia%20y%20Peluqueria%20Walld%E2%80%99s%20Quer%C3%A9taro!5e0!3m2!1ses!2smx!4v1731135600000!5m2!1ses!2smx"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Ubicación de Barbería y Peluquería Walld’s Querétaro"
+            ></iframe>
+          </div>
+
+          {/* Botón “Cómo llegar” */}
+          <div className="mt-6 flex justify-center">
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=Barberia+y+Peluqueria+Wallds+Quer%C3%A9taro,+Quer%C3%A9taro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#e8c547] text-[#e8c547] font-semibold tracking-wide uppercase rounded-md hover:bg-[#e8c547] hover:text-black transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l4 8-4 4-4-4 4-8zM12 22v-8" />
+              </svg>
+              Cómo llegar
+            </a>
           </div>
         </div>
       </div>
