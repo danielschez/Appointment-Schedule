@@ -8,6 +8,7 @@ from .models import Schedule, Weekday, Workinghours, Service, PromoCode
 from .forms import ScheduleAdminForm
 from .utils import enviar_email_cancelacion
 import logging
+from datetime import date
 
 logger = logging.getLogger('appointment.admin')
 
@@ -83,31 +84,35 @@ class ScheduleAdmin(admin.ModelAdmin):
         
         return queryset, False
 
+    # --- Dentro de ScheduleAdmin ---
     def delete_model(self, request, obj):
         """
         Se ejecuta cuando se elimina UNA cita desde el admin
         """
         logger.info(f'[DELETE] Eliminando cita {obj.id} de {obj.name}')
-        
+
         try:
-            # Enviar email de cancelación ANTES de eliminar
-            logger.info(f'[EMAIL] Enviando correo de cancelación a {obj.email}')
-            email_enviado = enviar_email_cancelacion(obj)
-            
-            if email_enviado:
-                logger.info(f'[OK] Email de cancelación enviado a {obj.email}')
-                self.message_user(
-                    request, 
-                    f'Cita eliminada y correo de cancelación enviado a {obj.email}',
-                    level='success'
-                )
+            # Solo enviar email si la fecha es hoy o futura
+            if obj.date >= date.today():
+                logger.info(f'[EMAIL] Enviando correo de cancelación a {obj.email}')
+                email_enviado = enviar_email_cancelacion(obj)
+
+                if email_enviado:
+                    logger.info(f'[OK] Email de cancelación enviado a {obj.email}')
+                    self.message_user(
+                        request,
+                        f'Cita eliminada y correo de cancelación enviado a {obj.email}',
+                        level='success'
+                    )
+                else:
+                    logger.warning(f'[WARN] No se pudo enviar email de cancelación a {obj.email}')
+                    self.message_user(
+                        request,
+                        f'Cita eliminada pero no se pudo enviar el correo a {obj.email}',
+                        level='warning'
+                    )
             else:
-                logger.warning(f'[WARN] No se pudo enviar email de cancelación a {obj.email}')
-                self.message_user(
-                    request,
-                    f'Cita eliminada pero no se pudo enviar el correo a {obj.email}',
-                    level='warning'
-                )
+                logger.info(f'[SKIP] No se envía correo para cita pasada ({obj.date})')
         except Exception as e:
             logger.error(f'[ERROR] Error al enviar email de cancelación: {str(e)}')
             import traceback
@@ -117,34 +122,37 @@ class ScheduleAdmin(admin.ModelAdmin):
                 f'Cita eliminada pero hubo un error al enviar el correo: {str(e)}',
                 level='error'
             )
-        
+
         # Finalmente eliminar el objeto
         super().delete_model(request, obj)
 
     def delete_queryset(self, request, queryset):
         """
         Se ejecuta cuando se eliminan MÚLTIPLES citas desde el admin
-        (usando la acción "Delete selected")
         """
         logger.info(f'[DELETE_MULTIPLE] Eliminando {queryset.count()} citas')
-        
+
+        emails_enviados = 0
         for obj in queryset:
             try:
-                logger.info(f'[EMAIL] Enviando correo de cancelación a {obj.email} (cita {obj.id})')
-                email_enviado = enviar_email_cancelacion(obj)
-                
-                if email_enviado:
-                    logger.info(f'[OK] Email enviado a {obj.email}')
+                if obj.date >= date.today():
+                    logger.info(f'[EMAIL] Enviando correo de cancelación a {obj.email} (cita {obj.id})')
+                    email_enviado = enviar_email_cancelacion(obj)
+                    if email_enviado:
+                        emails_enviados += 1
+                        logger.info(f'[OK] Email enviado a {obj.email}')
+                    else:
+                        logger.warning(f'[WARN] No se pudo enviar email a {obj.email}')
                 else:
-                    logger.warning(f'[WARN] No se pudo enviar email a {obj.email}')
+                    logger.info(f'[SKIP] No se envía correo para cita pasada ({obj.date})')
             except Exception as e:
                 logger.error(f'[ERROR] Error al enviar email a {obj.email}: {str(e)}')
-        
+
         # Eliminar todas las citas
         super().delete_queryset(request, queryset)
         self.message_user(
             request,
-            f'{queryset.count()} citas eliminadas. Se enviaron correos de cancelación.',
+            f'{queryset.count()} citas eliminadas. Se enviaron {emails_enviados} correos de cancelación.',
             level='success'
         )
 
