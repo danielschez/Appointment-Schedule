@@ -3,46 +3,139 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #f5f6fa;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #1565C0;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #1976D2;
+            border-bottom: 2px solid #1976D2;
+            padding-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .info-pago {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4CAF50;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 6px;
+        }
+
+        .info-pago p {
+            margin: 8px 0;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+            margin-top: 25px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #2196F3;">📅 Nueva Cita Agendada</h1>
-        
-        <h2>Cliente:</h2>
-        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0;">
-            <p><strong>Nombre:</strong> {{ nombre }}</p>
-            <p><strong>Email:</strong> {{ email }}</p>
-            <p><strong>Teléfono:</strong> {{ telefono }}</p>
-        </div>
-        
-        <h2>Detalles:</h2>
-        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0;">
-            <p><strong>Servicio:</strong> {{ servicio }}</p>
-            <p><strong>Fecha:</strong> {{ fecha }}</p>
-            <p><strong>Hora:</strong> {{ hora }}</p>
+<body>
+    <div class="container">
+        <h1>📅 Nueva Cita Agendada</h1>
+
+        <h2>Información del Cliente</h2>
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <td>{{ nombre }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ email }}</td>
+            </tr>
+            <tr>
+                <th>Teléfono</th>
+                <td>{{ telefono }}</td>
+            </tr>
+        </table>
+
+        <h2>Detalles de la Cita</h2>
+        <table>
+            <tr>
+                <th>Servicio</th>
+                <td>{{ servicio }}</td>
+            </tr>
+            <tr>
+                <th>Fecha</th>
+                <td>{{ fecha }}</td>
+            </tr>
+            <tr>
+                <th>Hora</th>
+                <td>{{ hora }}</td>
+            </tr>
             {% if descripcion %}
-            <p><strong>Notas:</strong> {{ descripcion }}</p>
+            <tr>
+                <th>Notas</th>
+                <td>{{ descripcion }}</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <h2>Información de Pago</h2>
+        <div class="info-pago">
+            {% if tiene_descuento %}
+                <p>💰 Precio original: <del>${{ precio_original }}</del></p>
+                <p>🎉 Descuento ({{ descuento_porcentaje }}%): -${{ descuento_monto }}</p>
+                <p class="highlight">Precio final: ${{ precio_final }}</p>
+                <p>📌 Código promocional: <strong>{{ codigo_promocional }}</strong></p>
+                <p style="color:#388E3C;">Ahorro total: ${{ descuento_monto }}</p>
+            {% else %}
+                <p class="highlight">💰 Precio: ${{ precio_final }}</p>
             {% endif %}
         </div>
 
-        <h2>Información de Pago:</h2>
-        <div style="background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0;">
-            {% if tiene_descuento %}
-                <p>Precio original: <del>${{ precio_original }}</del></p>
-                <p style="color: #4CAF50; font-weight: bold;">
-                    Descuento ({{ descuento_porcentaje }}%): -${{ descuento_monto }}
-                </p>
-                <p style="font-size: 1.2em; font-weight: bold; color: #1976D2;">
-                    <strong>Precio final: ${{ precio_final }}</strong>
-                </p>
-                <p style="background-color: #fff3e0; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                    📌 Código usado: <strong>{{ codigo_promocional }}</strong>
-                </p>
-            {% else %}
-                <p style="font-size: 1.2em; font-weight: bold;">
-                    <strong>Precio: ${{ precio_final }}</strong>
-                </p>
-            {% endif %}
+        <div class="footer">
+            Este es un correo automático de notificación de cita.<br>
+            Enviado por el sistema de <strong>Walld’s Barber</strong>.
         </div>
     </div>
 </body>
