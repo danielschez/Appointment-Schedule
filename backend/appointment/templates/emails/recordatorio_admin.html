@@ -1,0 +1,67 @@
+<!--appintment/templates/emails/recordatorio_admin.html-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 700px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1976D2;
+            text-align: center;
+        }
+        .cita {
+            background-color: #e3f2fd; 
+            padding: 15px; 
+            border-left: 6px solid #1976D2; 
+            margin: 15px 0; 
+            border-radius: 5px;
+        }
+        .cita p {
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: center; 
+            font-size: 0.9em; 
+            color: #666; 
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Citas Agendadas para Hoy</h1>
+        <p style="text-align: center; font-weight: bold;">{{ fecha }}</p>
+
+        {% if citas %}
+            {% for cita in citas %}
+                <div class="cita">
+                    <p><strong>Hora:</strong> {{ cita.hora }}</p>
+                    <p><strong>Nombre:</strong> {{ cita.nombre }}</p>
+                    <p><strong>Email:</strong> {{ cita.email }}</p>
+                    <p><strong>Teléfono:</strong> {{ cita.telefono }}</p>
+                    <p><strong>Servicio:</strong> {{ cita.servicio }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center;">No hay citas programadas para hoy.</p>
+        {% endif %}
+
+        <div class="footer">
+            Este es un correo automático de recordatorio de citas.
+        </div>
+    </div>
+</body>
+</html>
