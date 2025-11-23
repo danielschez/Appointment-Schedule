@@ -108,10 +108,11 @@ const About = () => {
               width="100%"
               height="100%"
               style={{ border: 0 }}
-              allowFullScreen
+              allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Ubicación de Barbería y Peluquería Walld’s Querétaro"
+              title="Ubicación de Barbería y Peluquería Walld's Querétaro"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             ></iframe>
           </div>
 
