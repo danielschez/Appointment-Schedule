@@ -1,3 +1,4 @@
+// src/components/Contact.jsx
 import React, { useState, useEffect } from "react";
 
 const About = () => {
@@ -5,10 +6,13 @@ const About = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const images = [
-    { url: "https://images.unsplash.com/photo-1598971639058-fab3c3109a00?auto=format&fit=crop&w=600&q=80", alt: "Modern barbershop interior" },
     { url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80", alt: "Professional barber at work" },
-    { url: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=600&q=80", alt: "Classic haircut service" },
-    { url: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80", alt: "Traditional shaving experience" }
+    { url: "/corte1.avif", alt: "Modern1" },
+    { url: "/corte2.avif", alt: "Modern2" },
+    { url: "/corte3.avif", alt: "Modern3" },
+    { url: "/corte4.avif", alt: "Modern4" },
+    { url: "/corte5.avif", alt: "Modern5" },
+    { url: "/corte6.avif", alt: "Modern6" }
   ];
 
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % images.length);
