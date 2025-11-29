@@ -5,6 +5,66 @@
   min-height: 100vh;
 }
 
+.dia.festivo {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 2px solid #f59e0b;
+  cursor: not-allowed;
+  position: relative;
+  font-weight: bold;
+}
+
+.dia.festivo:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+  transform: none;
+}
+
+.festivo-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.7em;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Mejorar tooltip para festivos */
+.dia.festivo[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dia.festivo[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+  margin-bottom: 2px;
+}
+
 /* Asegurar que las cards de servicio sean responsive */
 @media (max-width: 768px) {
   .grid.md\:grid-cols-3 {

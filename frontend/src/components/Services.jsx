@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// Función helper para formatear duración
 const formatDuration = (durationStr) => {
   if (!durationStr) return '0min';
   
@@ -28,7 +27,6 @@ const Services = () => {
 
   const API_BASE = import.meta.env.VITE_API_URL;
 
-  // Imágenes por defecto para cada tipo de servicio
   const imagenesDefault = {
     'corte': 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80',
     'afeitado': 'https://images.unsplash.com/photo-1604079628040-94301bb21b87?auto=format&fit=crop&w=600&q=80',
@@ -38,7 +36,6 @@ const Services = () => {
     'default': 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80'
   };
 
-  // Función para asignar imagen según el nombre del servicio
   const obtenerImagen = (nombreServicio) => {
     const nombre = nombreServicio.toLowerCase();
     
@@ -51,39 +48,28 @@ const Services = () => {
     return imagenesDefault.default;
   };
 
+  const obtenerUrlImagen = (servicio) => {
+    if (servicio.image) {
+      if (servicio.image.startsWith('http://') || servicio.image.startsWith('https://')) {
+        return servicio.image;
+      }
+      const baseUrl = API_BASE.replace(/\/api\/?$/, '');
+      return `${baseUrl}${servicio.image}`;
+    }
+    return obtenerImagen(servicio.name);
+  };
+
   useEffect(() => {
     const fetchServicios = async () => {
       setCargando(true);
       setError(null);
-      
+
       try {
-        const apiUrl = API_BASE || 'http://localhost:8000/api';
-        
-        // Intentar diferentes URLs
-        const urlsToTest = [
-          `${apiUrl}/service/`,
-          `${apiUrl}/service`,
-          `${apiUrl.replace('/api', '')}/api/service/`,
-        ];
-        
-        let serviciosData = null;
-        
-        for (const url of urlsToTest) {
-          try {
-            const response = await axios.get(url);
-            serviciosData = response.data;
-            break;
-          } catch (err) {
-            continue;
-          }
-        }
-        
-        if (!serviciosData) {
-          throw new Error('No se pudo conectar con la API de servicios');
-        }
-        
+        const url = `${API_BASE}/service/`;
+        const response = await axios.get(url);
+        const serviciosData = response.data;
+
         setServicios(Array.isArray(serviciosData) ? serviciosData : []);
-        
       } catch (err) {
         console.error('Error al cargar servicios:', err);
         setError(err.message);
@@ -92,15 +78,18 @@ const Services = () => {
         setCargando(false);
       }
     };
-    
+
     fetchServicios();
   }, [API_BASE]);
 
   const handleReservar = (servicio) => {
-    // Guardar el servicio seleccionado en sessionStorage
     sessionStorage.setItem('servicioSeleccionado', JSON.stringify(servicio));
-    // Navegar a la página de calendario
     navigate('/calendario');
+  };
+
+  const handleImageError = (e, nombreServicio) => {
+    console.warn(`Error al cargar imagen para ${nombreServicio}, usando imagen por defecto`);
+    e.target.src = obtenerImagen(nombreServicio);
   };
 
   // Estado de carga
@@ -165,9 +154,10 @@ const Services = () => {
                 {/* Imagen del servicio */}
                 <div className="relative h-80 overflow-hidden">
                   <img 
-                    src={serv.image || obtenerImagen(serv.name)}
+                    src={obtenerUrlImagen(serv)}
                     alt={serv.name} 
-                    loading="lazy" 
+                    loading="lazy"
+                    onError={(e) => handleImageError(e, serv.name)}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-75 group-hover:brightness-100" 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-transparent"></div>

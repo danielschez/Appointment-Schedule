@@ -70,6 +70,7 @@ const Calendario = () => {
   const [weekdays, setWeekdays] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [citas, setCitas] = useState([]);
+  const [diasBloqueados, setDiasBloqueados] = useState([]); // NUEVO: Estado para días festivos
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -92,25 +93,32 @@ const Calendario = () => {
       setError(null);
       
       try {
-        // Usar directamente la variable de entorno
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
         
         console.log('🔗 Conectando a API:', apiUrl);
         
-        // Hacer todas las peticiones en paralelo
-        const [srv, wd, wh, schedule] = await Promise.all([
+        // ACTUALIZADO: Agregar petición de días bloqueados
+        const [srv, wd, wh, schedule, blocked] = await Promise.all([
           axios.get(`${apiUrl}/service/`),
           axios.get(`${apiUrl}/weekday/`),
           axios.get(`${apiUrl}/workinghours/`),
-          axios.get(`${apiUrl}/schedule/`)
+          axios.get(`${apiUrl}/schedule/`),
+          axios.get(`${apiUrl}/blocked-dates/`, { 
+            params: { year: new Date().getFullYear() } 
+          }).catch(err => {
+            console.warn('⚠️ No se pudieron cargar días festivos:', err);
+            return { data: { blocked_dates: [] } };
+          })
         ]);
         
         console.log('✅ Datos cargados exitosamente');
+        console.log('📅 Días festivos bloqueados:', blocked.data.blocked_dates);
         
         setServicios(Array.isArray(srv.data) ? srv.data : []);
         setWeekdays(Array.isArray(wd.data) ? wd.data : []);
         setHorarios(Array.isArray(wh.data) ? wh.data : []);
         setCitas(Array.isArray(schedule.data) ? schedule.data : []);
+        setDiasBloqueados(blocked.data.blocked_dates || []); // NUEVO: Guardar días bloqueados
         
       } catch (err) {
         console.error('❌ Error al cargar datos:', err);
@@ -119,6 +127,7 @@ const Calendario = () => {
         setWeekdays([]);
         setHorarios([]);
         setCitas([]);
+        setDiasBloqueados([]);
       } finally {
         setCargando(false);
       }
@@ -126,6 +135,30 @@ const Calendario = () => {
     
     fetchAll();
   }, []);
+
+  // NUEVO: Recargar días festivos cuando cambia el año
+  useEffect(() => {
+    const fetchDiasBloqueados = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+        const response = await axios.get(`${apiUrl}/blocked-dates/`, {
+          params: { year: añoActual }
+        });
+        
+        if (response.data.success) {
+          setDiasBloqueados(response.data.blocked_dates);
+          console.log(`📅 Días festivos actualizados para ${añoActual}:`, response.data.blocked_dates);
+        }
+      } catch (error) {
+        console.warn('⚠️ Error al cargar días festivos:', error);
+        setDiasBloqueados([]);
+      }
+    };
+
+    if (!cargando) {
+      fetchDiasBloqueados();
+    }
+  }, [añoActual, cargando]);
 
   const dias = obtenerDiasDelMes(añoActual, mesActual);
 
@@ -145,7 +178,6 @@ const Calendario = () => {
   };
 
   const volverAServicios = () => {
-    // Limpiar sessionStorage y volver a la página de servicios
     sessionStorage.removeItem('servicioSeleccionado');
     navigate('/#servicios');
   };
@@ -178,7 +210,6 @@ const Calendario = () => {
     });
   };
 
-  // En tu componente Calendario.jsx
   const enviarCita = async (e) => {
     e.preventDefault();
 
@@ -212,7 +243,6 @@ const Calendario = () => {
         captchaToken
       };
 
-      // Agregar código promocional solo si se seleccionó "Sí" y hay un código
       if (tieneCodigo === 'si' && promoCode && promoCode.trim()) {
         citaData.promo_code_text = promoCode.trim();
       }
@@ -230,7 +260,6 @@ const Calendario = () => {
     } catch (error) {
       console.error('❌ Error al agendar cita:', error);
       
-      // Mostrar mensaje específico si el error es del código promocional
       if (error.response?.data?.promo_code) {
         alert(`Error: ${error.response.data.promo_code[0]}`);
       } else {
@@ -239,6 +268,19 @@ const Calendario = () => {
     } finally {
       setEnviandoCita(false);
     }
+  };
+
+  // NUEVO: Función para verificar si una fecha es festivo
+  const esFestivo = (fecha) => {
+    const fechaStr = fecha.toISOString().split('T')[0];
+    return diasBloqueados.some(dia => dia.date === fechaStr);
+  };
+
+  // NUEVO: Función para obtener el nombre del festivo
+  const getNombreFestivo = (fecha) => {
+    const fechaStr = fecha.toISOString().split('T')[0];
+    const festivo = diasBloqueados.find(dia => dia.date === fechaStr);
+    return festivo ? festivo.name : null;
   };
 
   const isDayBlocked = (fecha) => {
@@ -334,7 +376,6 @@ const Calendario = () => {
   };
 
   const getHoraActualMexico = () => {
-    // Crear fecha en zona horaria de México (America/Mexico_City)
     const ahoraMexico = new Date().toLocaleString('en-US', {
       timeZone: 'America/Mexico_City'
     });
@@ -366,7 +407,6 @@ const Calendario = () => {
 
     const horariosUnicos = [...new Set(todosLosHorarios)];
     
-    // Verificar si la fecha seleccionada es hoy
     const hoyMexico = new Date().toLocaleString('en-US', {
       timeZone: 'America/Mexico_City'
     });
@@ -379,19 +419,13 @@ const Calendario = () => {
     const esHoy = fechaSeleccionadaSinHora.getTime() === fechaHoyMexico.getTime();
     
     if (esHoy) {
-      // Obtener la hora actual en minutos (México)
       const horaActualMinutos = getHoraActualMexico();
       
       console.log('🕐 Hora actual en México:', minutesToTimeString(horaActualMinutos));
       
-      // Filtrar horarios: la cita debe terminar DESPUÉS de la hora actual
       return horariosUnicos
         .filter(hora => {
           const horaInicioMinutos = timeStringToMinutes(hora);
-          const horaFinMinutos = horaInicioMinutos + duracionMinutos;
-          
-          // La cita completa (inicio + duración) debe terminar después de ahora
-          // O al menos el inicio debe ser mayor o igual a la hora actual
           return horaInicioMinutos >= horaActualMinutos;
         })
         .sort();
@@ -411,7 +445,6 @@ const Calendario = () => {
     return weekdayInfo && weekdayInfo.status && tieneHorarios;
   };
 
-  // Mostrar estado de carga
   if (cargando) {
     return (
       <div className="calendario">
@@ -422,7 +455,6 @@ const Calendario = () => {
     );
   }
 
-  // Mostrar error si ocurrió
   if (error) {
     return (
       <div className="calendario">
@@ -436,7 +468,6 @@ const Calendario = () => {
     );
   }
 
-  // Si no hay servicio seleccionado, redirigir a servicios
   if (!servicioSeleccionado) {
     return (
       <div className="calendario">
@@ -450,7 +481,6 @@ const Calendario = () => {
     );
   }
 
-  // Mostrar el calendario directamente (sin pantalla de servicios)
   return (
     <div className="calendario">
       <button onClick={volverAServicios} className="back-button">← Volver a servicios</button>
@@ -481,10 +511,14 @@ const Calendario = () => {
           const esPasado = fecha < hoy;
           const estaDisponible = isDayAvailable(fecha);
           const estaBloqueado = isDayBlocked(fecha);
+          const esDiaFestivo = esFestivo(fecha); // NUEVO: Verificar si es festivo
+          const nombreFestivo = getNombreFestivo(fecha); // NUEVO: Obtener nombre del festivo
           
           let claseCSS = 'dia';
           if (esPasado) {
             claseCSS += ' pasado';
+          } else if (esDiaFestivo) {
+            claseCSS += ' festivo'; // NUEVO: Clase especial para festivos
           } else if (estaBloqueado) {
             claseCSS += ' bloqueado';
           } else if (estaDisponible) {
@@ -497,9 +531,11 @@ const Calendario = () => {
             <div
               key={fecha.toDateString()}
               className={claseCSS}
-              onClick={() => !esPasado && !estaBloqueado && estaDisponible && seleccionarFecha(fecha)}
+              onClick={() => !esPasado && !estaBloqueado && !esDiaFestivo && estaDisponible && seleccionarFecha(fecha)}
+              title={esDiaFestivo ? `🎉 ${nombreFestivo}` : ''} // NUEVO: Mostrar tooltip con nombre del festivo
             >
               {fecha.getDate()}
+              {esDiaFestivo && <span className="festivo-icon">🎉</span>} {/* NUEVO: Icono de festivo */}
             </div>
           );
         })}
@@ -557,7 +593,6 @@ const Calendario = () => {
         </div>
       )}
 
-      {/* Modal del formulario */}
       {mostrarFormulario && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -683,7 +718,6 @@ const Calendario = () => {
                   </div>
                 )}
               </div>
-
 
               <div className="campo">
                 <label htmlFor="description">Descripción (opcional)</label>
