@@ -3,6 +3,7 @@
   background: #0f0f0f;
   color: white;
   min-height: 100vh;
+  padding: 20px;
 }
 
 .dia.festivo {
@@ -118,9 +119,10 @@ button:active {
   animation: gradient-shift 8s ease-in-out infinite;
 }
 
-/* Ajustar el botón de cambiar servicio cuando se vuelve atrás */
-.calendario > button {
-  margin: 2rem;
+/* ACTUALIZADO: Botón de volver con mejor estilo */
+.calendario > button,
+.back-button {
+  margin: 0 0 2rem 0;
   padding: 1rem 2rem;
   background: transparent;
   color: #e8c547;
@@ -130,11 +132,13 @@ button:active {
   letter-spacing: 0.1em;
   cursor: pointer;
   transition: all 0.3s ease;
+  border-radius: 8px;
 }
 
-.calendario > button:hover {
+.calendario > button:hover,
+.back-button:hover {
   background: #e8c547;
-  color: black;
+  color: #0f0f0f;
   transform: translateX(-5px);
 }
 
@@ -144,7 +148,7 @@ button:active {
 
 .selector-servicio h2 {
   margin-bottom: 30px;
-  color: #333;
+  color: white;
 }
 
 .boton-servicio {
@@ -153,87 +157,114 @@ button:active {
   max-width: 400px;
   margin: 15px auto;
   padding: 15px;
-  border: 2px solid #ddd;
+  border: 2px solid #444;
   border-radius: 8px;
-  background: white;
+  background: #1a1a1a;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
 }
 
 .boton-servicio:hover {
-  border-color: #007bff;
-  background: #f8f9fa;
+  border-color: #e8c547;
+  background: #222;
   transform: translateY(-2px);
 }
 
 .boton-servicio strong {
   display: block;
   font-size: 1.1em;
-  color: #333;
+  color: white;
   margin-bottom: 5px;
 }
 
+/* ACTUALIZADO: Header con texto blanco */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(232, 197, 71, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(232, 197, 71, 0.2);
 }
 
 .header button {
-  background: #007bff;
-  color: white;
+  background: #e8c547;
+  color: #0f0f0f;
   border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
+  padding: 12px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .header button:hover {
-  background: #0056b3;
+  background: #d4b540;
+  transform: scale(1.05);
 }
 
+/* ACTUALIZADO: Título del mes y año en blanco */
 .header h2 {
   margin: 0;
   text-transform: capitalize;
-  color: #333;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+/* ACTUALIZADO: Info del servicio con fondo oscuro */
 .servicio-info {
-  background: #e7f3ff;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  background: rgba(232, 197, 71, 0.15);
+  border: 2px solid rgba(232, 197, 71, 0.3);
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
   text-align: center;
 }
 
 .servicio-info p {
   margin: 0;
-  color: #0056b3;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.servicio-info strong {
+  color: #e8c547;
+  font-weight: bold;
 }
 
 .dias-semana {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
+/* ACTUALIZADO: Días de la semana con mejor contraste */
 .dia-semana {
   text-align: center;
   font-weight: bold;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 5px;
-  color: #666;
+  padding: 12px;
+  background: rgba(232, 197, 71, 0.15);
+  border-radius: 8px;
+  color: #e8c547;
+  border: 1px solid rgba(232, 197, 71, 0.2);
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 1px;
 }
 
 .dias {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 8px;
   margin-bottom: 30px;
 }
 
@@ -242,46 +273,53 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  border: 2px solid #333;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: #1a1a1a;
+  color: white;
+  font-size: 16px;
 }
 
 .dia.vacio {
   border: none;
+  background: transparent;
   cursor: default;
 }
 
 .dia.pasado {
-  background: #f5f5f5;
-  color: #999;
+  background: #1a1a1a;
+  color: #555;
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .dia.disponible {
-  background: #e8f5e8;
+  background: rgba(40, 167, 69, 0.2);
   border-color: #28a745;
-  color: #155724;
+  color: #4ade80;
 }
 
 .dia.disponible:hover {
-  background: #d4edda;
+  background: rgba(40, 167, 69, 0.3);
+  border-color: #4ade80;
   transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
 }
 
 .dia.inactivo {
-  background: #fff3cd;
+  background: rgba(255, 193, 7, 0.15);
   border-color: #ffc107;
-  color: #856404;
+  color: #fbbf24;
   cursor: not-allowed;
 }
 
 .dia.bloqueado {
-  background: #f8d7da;
+  background: rgba(220, 53, 69, 0.2);
   border-color: #dc3545;
-  color: #721c24;
+  color: #ef4444;
   cursor: not-allowed;
   position: relative;
 }
@@ -291,91 +329,104 @@ button:active {
   position: absolute;
   top: 2px;
   right: 4px;
-  font-size: 10px;
-  color: #dc3545;
+  font-size: 12px;
+  color: #ef4444;
 }
 
+/* ACTUALIZADO: Sección de horas disponibles con texto blanco */
 .horas-disponibles {
-  margin-top: 30px;
+  margin-top: 40px;
+  background: rgba(232, 197, 71, 0.05);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 197, 71, 0.2);
 }
 
 .horas-disponibles h3 {
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 25px;
+  color: white;
   text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.6;
+}
+
+.horas-disponibles h3 strong {
+  color: #e8c547;
 }
 
 .citas-existentes {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 25px;
+  background: rgba(255, 193, 7, 0.15);
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
 }
 
 .citas-existentes h4 {
-  margin: 0 0 10px 0;
-  color: #856404;
-  font-size: 16px;
+  margin: 0 0 15px 0;
+  color: #fbbf24;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .citas-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cita-existente {
-  background: white;
-  padding: 8px 12px;
-  border-radius: 5px;
-  border-left: 4px solid #ffc107;
-  font-size: 14px;
-  color: #856404;
+  background: rgba(255, 193, 7, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid #fbbf24;
+  font-size: 15px;
+  color: #fbbf24;
   font-weight: 500;
 }
 
 .horas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  max-width: 800px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
 .hora-disponible {
-  padding: 15px 10px;
+  padding: 18px 12px;
   border: 2px solid #28a745;
-  background: #e8f5e8;
-  color: #155724;
-  border-radius: 8px;
+  background: rgba(40, 167, 69, 0.2);
+  color: #4ade80;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: bold;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 60px;
+  min-height: 70px;
   justify-content: center;
 }
 
 .hora-disponible:hover {
   background: #28a745;
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
 }
 
 .hora-inicio {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   line-height: 1.2;
 }
 
 .hora-fin {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 2px;
+  font-size: 13px;
+  opacity: 0.9;
+  margin-top: 4px;
 }
 
 /* Modal */
@@ -385,7 +436,7 @@ button:active {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,36 +448,38 @@ button:active {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 500px;
+  max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 25px 15px;
-  border-bottom: 1px solid #eee;
+  padding: 25px 30px 20px;
+  border-bottom: 2px solid #eee;
+  background: #f8f9fa;
 }
 
 .modal-header h3 {
   margin: 0;
   color: #333;
-  font-size: 24px;
+  font-size: 26px;
+  font-weight: bold;
 }
 
 .close-button {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
   color: #666;
   padding: 5px;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,31 +487,33 @@ button:active {
 }
 
 .close-button:hover {
-  background: #f5f5f5;
+  background: #e9ecef;
   color: #333;
 }
 
 .cita-info {
   background: #f8f9fa;
-  padding: 20px 25px;
-  border-bottom: 1px solid #eee;
+  padding: 25px 30px;
+  border-bottom: 2px solid #eee;
 }
 
 .cita-info p {
-  margin: 8px 0;
+  margin: 10px 0;
   color: #555;
+  font-size: 15px;
 }
 
 .cita-info strong {
   color: #333;
+  font-weight: 600;
 }
 
 .formulario-cita {
-  padding: 25px;
+  padding: 30px;
 }
 
 .campo {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .campo label {
@@ -466,13 +521,13 @@ button:active {
   margin-bottom: 8px;
   font-weight: 600;
   color: #333;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .campo input,
 .campo textarea {
   width: 100%;
-  padding: 12px 15px;
+  padding: 13px 16px;
   border: 2px solid #ddd;
   color: #333;
   border-radius: 8px;
@@ -494,6 +549,50 @@ button:active {
   color: #333;
 }
 
+/* Estilos para el selector de código promocional */
+.mb-6 {
+  margin-bottom: 24px;
+}
+
+.text-gray-700 {
+  color: #374151;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .botones-formulario {
   display: flex;
   gap: 15px;
@@ -503,13 +602,15 @@ button:active {
 .boton-cancelar,
 .boton-confirmar {
   flex: 1;
-  padding: 15px 20px;
+  padding: 16px 24px;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .boton-cancelar {
@@ -519,7 +620,8 @@ button:active {
 
 .boton-cancelar:hover:not(:disabled) {
   background: #5a6268;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
 .boton-confirmar {
@@ -529,7 +631,8 @@ button:active {
 
 .boton-confirmar:hover:not(:disabled) {
   background: #218838;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .boton-cancelar:disabled,
@@ -542,7 +645,15 @@ button:active {
 /* Responsive */
 @media (max-width: 768px) {
   .calendario {
-    padding: 10px;
+    padding: 15px;
+  }
+
+  .header {
+    padding: 15px;
+  }
+
+  .header h2 {
+    font-size: 22px;
   }
   
   .boton-servicio {
@@ -550,12 +661,21 @@ button:active {
   }
   
   .horas {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
   }
   
   .hora-disponible {
-    padding: 10px 6px;
+    padding: 12px 8px;
     font-size: 14px;
+    min-height: 60px;
+  }
+
+  .horas-disponibles {
+    padding: 20px 15px;
+  }
+
+  .horas-disponibles h3 {
+    font-size: 18px;
   }
 }
