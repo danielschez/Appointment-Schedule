@@ -180,7 +180,7 @@ const Services = () => {
                   </h3>
                   
                   {serv.description && (
-                    <p className="text-gray-400 mb-8 leading-relaxed">
+                    <p className="text-gray-400 mb-8 leading-relaxed whitespace-pre-line">
                       {serv.description}
                     </p>
                   )}
