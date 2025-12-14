@@ -31,7 +31,7 @@ class PromoCode(models.Model):
     def is_valid(self):
         now = timezone.now()
         return self.active and self.valid_from <= now <= self.valid_to
-    
+
     def apply_discount(self, amount):
         if self.is_valid():
             discount_amount = (self.discount_percentage / 100) * amount
@@ -76,7 +76,7 @@ class Schedule(models.Model):
     @property
     def name(self):
         return encryptor.decrypt(self._name) if self._name else ''
-    
+
     @name.setter
     def name(self, value):
         self._name = encryptor.encrypt(value) if value else ''
@@ -85,7 +85,7 @@ class Schedule(models.Model):
     @property
     def email(self):
         return encryptor.decrypt(self._email) if self._email else ''
-    
+
     @email.setter
     def email(self, value):
         self._email = encryptor.encrypt(value) if value else ''
@@ -94,7 +94,7 @@ class Schedule(models.Model):
     @property
     def phone(self):
         return encryptor.decrypt(self._phone) if self._phone else ''
-    
+
     @phone.setter
     def phone(self, value):
         self._phone = encryptor.encrypt(value) if value else ''
@@ -133,3 +133,47 @@ class Workinghours(models.Model):
         verbose_name = "Working Hour"
         verbose_name_plural = "Horas de trabajo"
         ordering = ['day__id', 'start_time']
+
+class Holiday(models.Model):
+    """Modelo para gestionar días festivos"""
+    name = models.CharField(max_length=100, verbose_name="Nombre del día festivo")
+    date = models.DateField(unique=True, verbose_name="Fecha")
+    recurring = models.BooleanField(
+        default=False,
+        verbose_name="Recurrente cada año",
+        help_text="Si está marcado, se aplicará cada año (ej: 25 de diciembre)"
+    )
+    active = models.BooleanField(default=True, verbose_name="Activo")
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.date.strftime('%d/%m/%Y')}"
+
+    def is_holiday_for_date(self, check_date):
+        """Verifica si una fecha dada es este día festivo"""
+        if self.recurring:
+            # Para festivos recurrentes, solo comparamos día y mes
+            return (self.date.day == check_date.day and
+                    self.date.month == check_date.month)
+        else:
+            # Para festivos específicos, comparamos la fecha exacta
+            return self.date == check_date
+
+    @classmethod
+    def is_holiday(cls, check_date):
+        """Método de clase para verificar si una fecha es festivo"""
+        holidays = cls.objects.filter(active=True)
+        for holiday in holidays:
+            if holiday.is_holiday_for_date(check_date):
+                return True
+        return False
+
+    class Meta:
+        verbose_name = "Día Festivo"
+        verbose_name_plural = "Días Festivos"
+        ordering = ['date']
