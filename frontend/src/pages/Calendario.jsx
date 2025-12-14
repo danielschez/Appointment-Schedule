@@ -70,7 +70,7 @@ const Calendario = () => {
   const [weekdays, setWeekdays] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [citas, setCitas] = useState([]);
-  const [diasBloqueados, setDiasBloqueados] = useState([]); // NUEVO: Estado para días festivos
+  const [diasBloqueados, setDiasBloqueados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -97,7 +97,6 @@ const Calendario = () => {
         
         console.log('🔗 Conectando a API:', apiUrl);
         
-        // ACTUALIZADO: Agregar petición de días bloqueados
         const [srv, wd, wh, schedule, blocked] = await Promise.all([
           axios.get(`${apiUrl}/service/`),
           axios.get(`${apiUrl}/weekday/`),
@@ -118,7 +117,7 @@ const Calendario = () => {
         setWeekdays(Array.isArray(wd.data) ? wd.data : []);
         setHorarios(Array.isArray(wh.data) ? wh.data : []);
         setCitas(Array.isArray(schedule.data) ? schedule.data : []);
-        setDiasBloqueados(blocked.data.blocked_dates || []); // NUEVO: Guardar días bloqueados
+        setDiasBloqueados(blocked.data.blocked_dates || []);
         
       } catch (err) {
         console.error('❌ Error al cargar datos:', err);
@@ -136,7 +135,7 @@ const Calendario = () => {
     fetchAll();
   }, []);
 
-  // NUEVO: Recargar días festivos cuando cambia el año
+  // Recargar días festivos cuando cambia el año
   useEffect(() => {
     const fetchDiasBloqueados = async () => {
       try {
@@ -210,6 +209,18 @@ const Calendario = () => {
     });
   };
 
+  // NUEVA FUNCIÓN: Recargar citas para actualizar disponibilidad
+  const recargarCitas = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const response = await axios.get(`${apiUrl}/schedule/`);
+      setCitas(Array.isArray(response.data) ? response.data : []);
+      console.log('🔄 Citas recargadas');
+    } catch (error) {
+      console.error('Error al recargar citas:', error);
+    }
+  };
+
   const enviarCita = async (e) => {
     e.preventDefault();
 
@@ -228,7 +239,6 @@ const Calendario = () => {
       return;
     }
 
-    captchaRef.current.reset();
     setEnviandoCita(true);
 
     try {
@@ -251,6 +261,12 @@ const Calendario = () => {
       const response = await axios.post(`${apiUrl}/schedule/`, citaData);
 
       console.log('✅ Cita creada:', response.data);
+      
+      // Limpiar captcha
+      if (captchaRef.current) {
+        captchaRef.current.reset();
+      }
+      
       cerrarFormulario();
       alert('¡Cita agendada exitosamente!');
       
@@ -260,23 +276,71 @@ const Calendario = () => {
     } catch (error) {
       console.error('❌ Error al agendar cita:', error);
       
-      if (error.response?.data?.promo_code) {
-        alert(`Error: ${error.response.data.promo_code[0]}`);
+      // MEJORADO: Manejo específico de errores
+      if (error.response) {
+        const errorData = error.response.data;
+        
+        // Error de cita duplicada (fecha y hora ya ocupadas)
+        if (errorData.date || errorData.time) {
+          alert(
+            '⚠️ Lo sentimos, este horario acaba de ser reservado por otro cliente.\n\n' +
+            'Por favor, selecciona otro horario disponible.\n\n' +
+            'El calendario se actualizará automáticamente.'
+          );
+          
+          // Recargar las citas para actualizar la disponibilidad
+          await recargarCitas();
+          
+          // Cerrar el formulario y volver a mostrar horarios actualizados
+          cerrarFormulario();
+          
+        } 
+        // Error de código promocional
+        else if (errorData.promo_code) {
+          alert(`❌ Código promocional: ${errorData.promo_code[0] || errorData.promo_code}`);
+        }
+        // Error de validación general
+        else if (errorData.detail) {
+          alert(`❌ Error: ${errorData.detail}`);
+        }
+        // Otros errores de validación
+        else if (typeof errorData === 'object') {
+          const mensajes = Object.entries(errorData)
+            .map(([campo, errores]) => {
+              const mensajesError = Array.isArray(errores) ? errores.join(', ') : errores;
+              return `${campo}: ${mensajesError}`;
+            })
+            .join('\n');
+          alert(`❌ Error de validación:\n${mensajes}`);
+        }
+        // Error genérico
+        else {
+          alert('❌ Error al agendar la cita. Por favor intente nuevamente.');
+        }
+      } else if (error.request) {
+        // Error de red
+        alert('❌ Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.');
       } else {
-        alert('Error al agendar la cita. Por favor intente nuevamente.');
+        // Error desconocido
+        alert('❌ Error inesperado. Por favor intente nuevamente.');
       }
+      
+      // Resetear captcha en caso de error
+      if (captchaRef.current) {
+        captchaRef.current.reset();
+        setCaptchaToken(null);
+      }
+      
     } finally {
       setEnviandoCita(false);
     }
   };
 
-  // NUEVO: Función para verificar si una fecha es festivo
   const esFestivo = (fecha) => {
     const fechaStr = fecha.toISOString().split('T')[0];
     return diasBloqueados.some(dia => dia.date === fechaStr);
   };
 
-  // NUEVO: Función para obtener el nombre del festivo
   const getNombreFestivo = (fecha) => {
     const fechaStr = fecha.toISOString().split('T')[0];
     const festivo = diasBloqueados.find(dia => dia.date === fechaStr);
@@ -511,14 +575,14 @@ const Calendario = () => {
           const esPasado = fecha < hoy;
           const estaDisponible = isDayAvailable(fecha);
           const estaBloqueado = isDayBlocked(fecha);
-          const esDiaFestivo = esFestivo(fecha); // NUEVO: Verificar si es festivo
-          const nombreFestivo = getNombreFestivo(fecha); // NUEVO: Obtener nombre del festivo
+          const esDiaFestivo = esFestivo(fecha);
+          const nombreFestivo = getNombreFestivo(fecha);
           
           let claseCSS = 'dia';
           if (esPasado) {
             claseCSS += ' pasado';
           } else if (esDiaFestivo) {
-            claseCSS += ' festivo'; // NUEVO: Clase especial para festivos
+            claseCSS += ' festivo';
           } else if (estaBloqueado) {
             claseCSS += ' bloqueado';
           } else if (estaDisponible) {
@@ -532,10 +596,10 @@ const Calendario = () => {
               key={fecha.toDateString()}
               className={claseCSS}
               onClick={() => !esPasado && !estaBloqueado && !esDiaFestivo && estaDisponible && seleccionarFecha(fecha)}
-              title={esDiaFestivo ? `🎉 ${nombreFestivo}` : ''} // NUEVO: Mostrar tooltip con nombre del festivo
+              title={esDiaFestivo ? `🎉 ${nombreFestivo}` : ''}
             >
               {fecha.getDate()}
-              {esDiaFestivo && <span className="festivo-icon">🎉</span>} {/* NUEVO: Icono de festivo */}
+              {esDiaFestivo && <span className="festivo-icon">🎉</span>}
             </div>
           );
         })}
