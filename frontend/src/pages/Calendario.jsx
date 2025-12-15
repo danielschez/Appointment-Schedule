@@ -77,7 +77,6 @@ const Calendario = () => {
   const API_BASE = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    // Leer el servicio desde sessionStorage
     const servicioGuardado = sessionStorage.getItem('servicioSeleccionado');
     if (servicioGuardado) {
       try {
@@ -135,7 +134,6 @@ const Calendario = () => {
     fetchAll();
   }, []);
 
-  // Recargar días festivos cuando cambia el año
   useEffect(() => {
     const fetchDiasBloqueados = async () => {
       try {
@@ -262,7 +260,6 @@ const Calendario = () => {
 
       console.log('✅ Cita creada:', response.data);
       
-      // Limpiar captcha
       if (captchaRef.current) {
         captchaRef.current.reset();
       }
@@ -276,11 +273,9 @@ const Calendario = () => {
     } catch (error) {
       console.error('❌ Error al agendar cita:', error);
       
-      // MEJORADO: Manejo específico de errores
       if (error.response) {
         const errorData = error.response.data;
         
-        // Error de cita duplicada (fecha y hora ya ocupadas)
         if (errorData.date || errorData.time) {
           alert(
             '⚠️ Lo sentimos, este horario acaba de ser reservado por otro cliente.\n\n' +
@@ -288,22 +283,17 @@ const Calendario = () => {
             'El calendario se actualizará automáticamente.'
           );
           
-          // Recargar las citas para actualizar la disponibilidad
           await recargarCitas();
           
-          // Cerrar el formulario y volver a mostrar horarios actualizados
           cerrarFormulario();
           
-        } 
-        // Error de código promocional
+        }
         else if (errorData.promo_code) {
           alert(`❌ Código promocional: ${errorData.promo_code[0] || errorData.promo_code}`);
         }
-        // Error de validación general
         else if (errorData.detail) {
           alert(`❌ Error: ${errorData.detail}`);
         }
-        // Otros errores de validación
         else if (typeof errorData === 'object') {
           const mensajes = Object.entries(errorData)
             .map(([campo, errores]) => {
@@ -313,19 +303,15 @@ const Calendario = () => {
             .join('\n');
           alert(`❌ Error de validación:\n${mensajes}`);
         }
-        // Error genérico
         else {
           alert('❌ Error al agendar la cita. Por favor intente nuevamente.');
         }
       } else if (error.request) {
-        // Error de red
         alert('❌ Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.');
       } else {
-        // Error desconocido
         alert('❌ Error inesperado. Por favor intente nuevamente.');
       }
       
-      // Resetear captcha en caso de error
       if (captchaRef.current) {
         captchaRef.current.reset();
         setCaptchaToken(null);
