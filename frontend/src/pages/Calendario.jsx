@@ -276,17 +276,24 @@ const Calendario = () => {
       if (error.response) {
         const errorData = error.response.data;
         
-        if (errorData.date || errorData.time) {
+        if (errorData.appointment_conflict) {
           alert(
-            '⚠️ Lo sentimos, este horario acaba de ser reservado por otro cliente.\n\n' +
+            '⚠️ ' + errorData.appointment_conflict + '\n\n' +
+            'El calendario se actualizará automáticamente.'
+          );
+          
+          await recargarCitas();
+          cerrarFormulario();
+        }
+        else if (errorData.date || errorData.time || errorData.non_field_errors) {
+          alert(
+            '⚠️ Este horario ya ha sido reservado.\n\n' +
             'Por favor, selecciona otro horario disponible.\n\n' +
             'El calendario se actualizará automáticamente.'
           );
           
           await recargarCitas();
-          
           cerrarFormulario();
-          
         }
         else if (errorData.promo_code) {
           alert(`❌ Código promocional: ${errorData.promo_code[0] || errorData.promo_code}`);
