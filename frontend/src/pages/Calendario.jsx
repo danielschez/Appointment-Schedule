@@ -73,6 +73,7 @@ const Calendario = () => {
   const [diasBloqueados, setDiasBloqueados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [breaks, setBreaks] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -96,7 +97,7 @@ const Calendario = () => {
         
         console.log('🔗 Conectando a API:', apiUrl);
         
-        const [srv, wd, wh, schedule, blocked] = await Promise.all([
+        const [srv, wd, wh, schedule, blocked, brks] = await Promise.all([
           axios.get(`${apiUrl}/service/`),
           axios.get(`${apiUrl}/weekday/`),
           axios.get(`${apiUrl}/workinghours/`),
@@ -106,6 +107,10 @@ const Calendario = () => {
           }).catch(err => {
             console.warn('⚠️ No se pudieron cargar días festivos:', err);
             return { data: { blocked_dates: [] } };
+          }),
+          axios.get(`${apiUrl}/breaks/`).catch(err => {
+            console.warn('⚠️ No se pudieron cargar breaks:', err);
+            return { data: [] };
           })
         ]);
         
@@ -117,6 +122,7 @@ const Calendario = () => {
         setHorarios(Array.isArray(wh.data) ? wh.data : []);
         setCitas(Array.isArray(schedule.data) ? schedule.data : []);
         setDiasBloqueados(blocked.data.blocked_dates || []);
+        setBreaks(Array.isArray(brks.data) ? brks.data : []);
         
       } catch (err) {
         console.error('❌ Error al cargar datos:', err);
@@ -338,6 +344,25 @@ const Calendario = () => {
     const fechaStr = fecha.toISOString().split('T')[0];
     const festivo = diasBloqueados.find(dia => dia.date === fechaStr);
     return festivo ? festivo.name : null;
+  };
+
+  const isInBreak = (horaStr) => {
+    const slotMinutos = timeStringToMinutes(horaStr);
+    return breaks.some(brk => {
+      const inicio = timeStringToMinutes(brk.start_time);
+      const fin = timeStringToMinutes(brk.end_time);
+      return slotMinutos >= inicio && slotMinutos < fin;
+    });
+  };
+
+  const getNombreBreak = (horaStr) => {
+    const slotMinutos = timeStringToMinutes(horaStr);
+    const brk = breaks.find(b => {
+      const inicio = timeStringToMinutes(b.start_time);
+      const fin = timeStringToMinutes(b.end_time);
+      return slotMinutos >= inicio && slotMinutos < fin;
+    });
+    return brk ? brk.name : null;
   };
 
   const isDayBlocked = (fecha) => {
@@ -631,15 +656,19 @@ const Calendario = () => {
                 const inicio = hora;
                 const duracion = timeStringToMinutes(servicioSeleccionado.duration);
                 const fin = minutesToTimeString(timeStringToMinutes(hora) + duracion);
-                
+                const enBreak = isInBreak(hora);
+                const nombreBreak = getNombreBreak(hora);
+
                 return (
-                  <button 
-                    key={hora} 
-                    className="hora-disponible"
-                    onClick={() => seleccionarHora(hora)}
+                  <button
+                    key={hora}
+                    className={`hora-disponible${enBreak ? ' hora-break' : ''}`}
+                    onClick={() => !enBreak && seleccionarHora(hora)}
+                    disabled={enBreak}
+                    title={enBreak ? `🚫 ${nombreBreak}` : `Reservar ${inicio} - ${fin}`}
                   >
                     <div className="hora-inicio">{inicio}</div>
-                    <div className="hora-fin">a {fin}</div>
+                    <div className="hora-fin">{enBreak ? `🚫 ${nombreBreak}` : `a ${fin}`}</div>
                   </button>
                 );
               })
