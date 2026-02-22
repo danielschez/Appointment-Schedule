@@ -397,13 +397,12 @@ const Calendario = () => {
       const fin = inicio + getServicioDuracion(cita.service);
       espaciosOcupados.push({ inicio, fin });
     });
-    espaciosOcupados.sort((a, b) => a.inicio - b.fin);
+    espaciosOcupados.sort((a, b) => a.inicio - b.inicio);
     return espaciosOcupados;
   };
 
   const getEspaciosLibres = (fecha, horarioLaboral) => {
     const espaciosOcupados = getEspaciosOcupados(fecha);
-    const espaciosLibres = [];
     const inicioLaboral = timeStringToMinutes(horarioLaboral.start_time);
     const finLaboral = timeStringToMinutes(horarioLaboral.end_time);
 
@@ -411,30 +410,39 @@ const Calendario = () => {
       return [{ inicio: inicioLaboral, fin: finLaboral }];
     }
 
-    if (espaciosOcupados[0].inicio > inicioLaboral) {
-      espaciosLibres.push({
-        inicio: inicioLaboral,
-        fin: espaciosOcupados[0].inicio
-      });
+    // Fusionar citas solapadas o contenidas una dentro de otra
+    const fusionados = [];
+    let current = { ...espaciosOcupados[0] };
+
+    for (let i = 1; i < espaciosOcupados.length; i++) {
+      const next = espaciosOcupados[i];
+      if (next.inicio < current.fin) {
+        current.fin = Math.max(current.fin, next.fin);
+      } else {
+        fusionados.push(current);
+        current = { ...next };
+      }
+    }
+    fusionados.push(current);
+
+    // Calcular huecos libres entre bloques fusionados
+    const espaciosLibres = [];
+
+    if (fusionados[0].inicio > inicioLaboral) {
+      espaciosLibres.push({ inicio: inicioLaboral, fin: fusionados[0].inicio });
     }
 
-    for (let i = 0; i < espaciosOcupados.length - 1; i++) {
-      const finCitaActual = espaciosOcupados[i].fin;
-      const inicioCitaSiguiente = espaciosOcupados[i + 1].inicio;
-      if (inicioCitaSiguiente > finCitaActual) {
-        espaciosLibres.push({
-          inicio: finCitaActual,
-          fin: inicioCitaSiguiente
-        });
+    for (let i = 0; i < fusionados.length - 1; i++) {
+      const finActual = fusionados[i].fin;
+      const inicioSiguiente = fusionados[i + 1].inicio;
+      if (inicioSiguiente > finActual) {
+        espaciosLibres.push({ inicio: finActual, fin: inicioSiguiente });
       }
     }
 
-    const ultimaCita = espaciosOcupados[espaciosOcupados.length - 1];
-    if (ultimaCita.fin < finLaboral) {
-      espaciosLibres.push({
-        inicio: ultimaCita.fin,
-        fin: finLaboral
-      });
+    const ultimo = fusionados[fusionados.length - 1];
+    if (ultimo.fin < finLaboral) {
+      espaciosLibres.push({ inicio: ultimo.fin, fin: finLaboral });
     }
 
     return espaciosLibres;
